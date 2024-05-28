@@ -19,12 +19,17 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module forwarding_unit (
+	input forwarding,
     input [4:0] writebackreg_memwb,
     input reg_write_memwb,
     input reg_write_exmem,
     input [4:0] writebackreg_exmem,
     input [4:0] rt_idex,
     input [4:0] rs_idex,
+	 input mem_read_memwb,
+	 input mem_write_idex,
+	 input [4:0]rs,
+	  input [4:0]rt,
     output reg [1:0] forwardA,
     output reg [1:0] forwardB
 );
@@ -32,11 +37,11 @@ module forwarding_unit (
         // Default values to prevent latches
         forwardA = 2'b00;
         forwardB = 2'b00;
-
+		if(forwarding)begin
         // EX Hazard
-        if (reg_write_exmem && (writebackreg_exmem != 5'b00000) && (writebackreg_exmem == rs_idex))
+        if (reg_write_exmem  &&(writebackreg_exmem != 5'b00000) && (writebackreg_exmem == rs_idex))
             forwardA = 2'b10;
-        if (reg_write_exmem && (writebackreg_exmem != 5'b00000) && (writebackreg_exmem == rt_idex))
+        if (reg_write_exmem && !(mem_write_idex) &&(writebackreg_exmem != 5'b00000) && (writebackreg_exmem == rt_idex))
             forwardB = 2'b10;
 
         // MEM Hazard
@@ -44,5 +49,12 @@ module forwarding_unit (
             forwardA = 2'b01;
         if (reg_write_memwb && (writebackreg_memwb != 5'b00000) && !(reg_write_exmem && (writebackreg_exmem != 5'b00000) && (writebackreg_exmem == rt_idex)) && (writebackreg_memwb == rt_idex))
             forwardB = 2'b01;
+				
+		  if (mem_read_memwb && (rt_idex == rs))
+					forwardA=2'b01;
+					
+		  if( mem_read_memwb &&(rt_idex == rt))
+					 forwardB = 2'b01;
+		end			 
     end
 endmodule

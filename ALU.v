@@ -44,6 +44,12 @@ module ALU(  input [31:0] rs_data_idex, rt_data_idex,
           4'b0000: alu_result = input1 & input2;//AND
           4'b0001: alu_result = input1 | input2;//OR
           4'b1100: alu_result = ~(input1 | input2);//NOR
+			 4'b1110:begin
+				   if (input1 < input2)
+						alu_result = 1;
+					else
+						alu_result = 0;
+			 end
           4'b1001: alu_result = input2 << input1 ;//sll
 			default:alu_result=0;
 		endcase

@@ -1,53 +1,50 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date:    21:05:12 05/18/2024 
-// Design Name: 
-// Module Name:    Datamem 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
-//
-// Dependencies: 
-//
-// Revision: 
-// Revision 0.01 - File Created
-// Additional Comments: 
-//
-//////////////////////////////////////////////////////////////////////////////////
-module Datamem( input [31:0]address, 
-	input [31:0]data_in, 
+
+module Datamem( input [31:0]address,  
 	output reg [31:0] data_out,  
 	input clk,
 	input rst,
 	input we,
-	input mem_read_exmem
+	input mem_read_exmem,
+	input [31:0]rt_data_exmem,
+	input [31:0]data_towrite_memwb,
+	input [1:0]forwardBE
 	); 
-
-	reg [31:0] memory [4:0]; 
+	reg [31:0]data_in;
+	reg [31:0] memory [8:0]; 
    
 	
 	initial begin
 		memory [0] = 32'd13; 
 		memory [1] = 32'd10;
-		memory [2] = 32'd15;
+		memory [2] = 32'b00000000000000000000000000000001;
 		memory[3]=32'd20;
+		memory[4]=32'b00000000000000000000000000000101;
+		memory[5]=32'b00000000000000000000000000001101;
+		memory[6]=32'b00000000000000000000000000000100;
+		memory[7]=32'b00000000000000000000000000000011;
+		memory[8]=32'b00000000000000000000000000000111;
 	end
 	
    always @(*) begin
-		if(mem_read_exmem)
-			data_out=memory[address];
+		if(rst)
+			data_out=0;
+		else begin	
+			if(mem_read_exmem)
+				data_out=memory[address];
+		end		
 
 	end
-	
+	always@(*)begin
+		case(forwardBE)
+			2'b00:data_in=rt_data_exmem;
+			2'b10:data_in=data_towrite_memwb;
+		endcase	
+	end
 	//assign data_out = memory [address]; 
 	
 	always @(posedge clk )begin
-		//if(rst)
-		//	data_out=0;
+		
 		if (we)
 			memory [address] <= data_in; 	
 	end
